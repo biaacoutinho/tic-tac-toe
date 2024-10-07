@@ -43,10 +43,15 @@ def result(board, action):
     '''
     returns the board that results from making move (i, j) on the board.
     '''
-    player = player(board)
+    p = player(board)
+    new_board = [[EMPTY for i in range(3)] for j in range(3)]
+    for i in range(3):
+        for j in range(3):
+            new_board[i][j] = board[i][j]
+
     i, j = action
-    board[i][j] = player
-    return board
+    new_board[i][j] = p
+    return new_board
 
 
 def winner(board):
@@ -82,46 +87,75 @@ def terminal(board):
     '''
     returns True if game is over, False otherwise.
     '''
+    if winner(board) is not None:
+        return True
+    
     for i in range(3):
-        prev = board[i][0]
         for j in range(3):
             if board[i][j] == EMPTY:
-                break
-            elif board[i][j] != prev:
-                break
-            if j == 2:
-                return True
+                return False
     
-    for i in range(3):
-        prev = board[0][i]
-        for j in range(3):
-            if board[j][i] == EMPTY:
-                break
-            elif board[j][i] != prev:
-                break
-            if j == 2:
-                return True
-    
-    if board[1][1] != EMPTY and (board[0][0] == board[1][1] == board[2][2] or board[0][2] == board[1][1] == board[2][0]):
-        return True
-
-    return False
+    return True
 
 
 def utility(board):
     '''
     returns 1 if X has won the game, -1 if O has won, 0 otherwise.
     '''
-    winner = winner(board)
-    if winner == X:
+    w = winner(board)
+    if w == X:
         return 1
-    if winner == O:
+    if w == O:
         return -1
     return 0
+
+
+def calculate_minimax(board, is_max):
+    '''
+    return the optimal value for the current player on the board.
+    '''
+    if terminal(board):
+        return utility(board)
+    
+    if is_max:
+        best_val = -2
+        for action in actions(board):
+            new_board = result(board, action)
+            val = calculate_minimax(new_board, False)
+            if val > best_val:
+                best_val = val
+        return best_val
+    
+    if not is_max:
+        best_val = 2
+        for action in actions(board):
+            new_board = result(board, action)
+            val = calculate_minimax(new_board, True)
+            if val < best_val:
+                best_val = val
+        return best_val
 
 
 def minimax(board):
     '''
     returns the optimal action for the current player on the board.
     '''
-    raise NotImplementedError
+    best_val = -2
+    best_action = None
+
+    p = player(board)
+
+    for i in range(3):
+        for j in range(3):
+            if board[i][j] == EMPTY:
+                board[i][j] = p
+
+                minimax_val = calculate_minimax(board, True)
+
+                board[i][j] = EMPTY
+
+                if minimax_val > best_val:
+                    best_action = (i, j)
+                    best_val = minimax_val
+  
+    return best_action
