@@ -140,21 +140,21 @@ def minimax(board):
     '''
     returns the optimal action for the current player on the board.
     '''
-    best_val = -2
     best_action = None
 
     p = player(board)
+    best_val = -2 if p == X else 2
 
     for i in range(3):
         for j in range(3):
             if board[i][j] == EMPTY:
                 board[i][j] = p
 
-                minimax_val = calculate_minimax(board, True)
+                minimax_val = calculate_minimax(board, p == O)
 
                 board[i][j] = EMPTY
 
-                if minimax_val > best_val:
+                if p == X and minimax_val > best_val or p == O and minimax_val < best_val:
                     best_action = (i, j)
                     best_val = minimax_val
   
